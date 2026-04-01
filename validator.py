@@ -1,3 +1,5 @@
+"""Validate and normalize parsed NEM12 records before transformation."""
+
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
@@ -7,6 +9,8 @@ from exceptions import FatalFileError, RecoverableRecordError
 VALID_INTERVALS = {5, 15, 30}
 
 
+# NEM12 interval payloads are daily, so the valid count is derived from
+# the active interval length rather than stored explicitly in the file.
 def expected_interval_count(interval_minutes: int) -> int:
     if interval_minutes not in VALID_INTERVALS:
         raise FatalFileError(
@@ -15,6 +19,8 @@ def expected_interval_count(interval_minutes: int) -> int:
     return 1440 // interval_minutes
 
 
+# Validate the active 200 record context and normalize interval length to int
+# so later stages can treat it as trusted state.
 def validate_200_record(record: dict) -> dict:
     nmi = record.get("nmi")
     raw_interval = record.get("interval")
@@ -46,6 +52,8 @@ def validate_200_record(record: dict) -> dict:
     }
 
 
+# Validate a 300 record against the active interval context and return parsed
+# Decimal values so timestamp expansion can stay free of data-quality checks.
 def validate_300_record(record: dict, interval_minutes: int) -> dict:
     line_number = record.get("line_number")
     date_str = record.get("date")
@@ -67,6 +75,7 @@ def validate_300_record(record: dict, interval_minutes: int) -> dict:
     expected_count = expected_interval_count(interval_minutes)
     actual_count = len(raw_values)
 
+    # A 300 record must represent one complete day for the active interval.
     if actual_count != expected_count:
         raise RecoverableRecordError(
             f"Line {line_number}: 300 record has {actual_count} interval values, expected {expected_count}"
@@ -86,6 +95,8 @@ def validate_300_record(record: dict, interval_minutes: int) -> dict:
                 f"Line {line_number}: invalid consumption value '{raw_value}' at interval {index}"
             ) from exc
 
+        # Negative reads are rejected here so the SQL output path only handles
+        # semantically valid consumption data.
         if value < 0:
             raise RecoverableRecordError(
                 f"Line {line_number}: negative consumption {value} at interval {index}"

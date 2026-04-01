@@ -1,3 +1,5 @@
+"""Orchestrate parsing, validation, transformation, and SQL output."""
+
 import logging
 
 from exceptions import FatalFileError, RecoverableRecordError
@@ -11,6 +13,8 @@ from validator import validate_200_record, validate_300_record
 logger = logging.getLogger(__name__)
 
 
+# Run the streaming pipeline from input file to batched SQL output.
+# Fatal file issues stop processing; invalid 300 records are skipped.
 def main() -> None:
     configure_logging()
 
@@ -31,6 +35,7 @@ def main() -> None:
 
             for record in parse_file(input_file_path):
                 if record["type"] == "200":
+                    # The latest valid 200 record defines context for later 300 records.
                     validated_200 = validate_200_record(record)
                     current_nmi = validated_200["nmi"]
                     current_interval = validated_200["interval"]
@@ -43,6 +48,7 @@ def main() -> None:
                     )
 
                 elif record["type"] == "300":
+                    # A 300 record is only meaningful once a valid 200 context exists.
                     if current_nmi is None or current_interval is None:
                         raise FatalFileError(
                             f"Line {record['line_number']}: encountered 300 record before any valid 200 record"
@@ -51,6 +57,7 @@ def main() -> None:
                     try:
                         validated_300 = validate_300_record(record, current_interval)
                     except RecoverableRecordError as exc:
+                        # Data-quality issues in a single day should not discard the file.
                         skipped_records += 1
                         logger.warning("Skipping invalid 300 record: %s", exc)
                         continue
@@ -74,6 +81,7 @@ def main() -> None:
             writer.close()
 
     except FatalFileError as exc:
+        # Structural issues leave the file context unreliable, so processing stops.
         logger.error("Fatal error during processing: %s", exc)
         raise
 

@@ -1,3 +1,5 @@
+"""Define error types that separate fatal file issues from recoverable records."""
+
 class ValidationError(Exception):
     """Base class for validation-related errors."""
 
