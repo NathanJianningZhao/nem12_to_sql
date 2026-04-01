@@ -1,3 +1,7 @@
+import pytest
+
+from exceptions import FatalFileError
+from main import main
 from pathlib import Path
 
 from parser import parse_file
@@ -37,3 +41,19 @@ def test_end_to_end_parsing_validation_and_transformation(tmp_path: Path) -> Non
     assert output_rows[0]["nmi"] == "NEM1201009"
     assert output_rows[0]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") == "2005-03-01 00:00:00"
     assert output_rows[-1]["timestamp"].strftime("%Y-%m-%d %H:%M:%S") == "2005-03-01 23:30:00"
+
+
+def test_main_raises_when_300_record_appears_before_valid_200_context(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    sample_file = tmp_path / "sample.txt"
+    sample_file.write_text(
+        "300,20050301,0,0,0,0,0,0,0,0,0,0,0,0,0.461,0.810,0.568,1.234,1.353,1.507,1.344,1.773,0.848,\n"
+        "1.271,0.895,1.327,1.013,1.793,0.988,0.985,0.876,0.555,0.760,0.938,0.566,0.512,0.970,0.760,0.731,\n"
+        "0.615,0.886,0.531,0.774,0.712,0.598,0.670,0.587,0.657,0.345,0.231,A,,,20050310121004,20050310182204\n",
+        encoding="utf-8",
+    )
+    monkeypatch.chdir(tmp_path)
+
+    with pytest.raises(FatalFileError):
+        main()
