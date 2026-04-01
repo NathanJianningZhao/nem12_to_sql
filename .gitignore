@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.pyc
+output.sql
+# Virtual environments
+venv/
+.env/
+
+# Output files
+output.sql
+
+# OS files
+.DS_Store
