@@ -35,4 +35,5 @@ def test_sql_writer_flush_writes_insert_statement() -> None:
     assert "'2005-03-01 00:30:00'" in sql
     assert "0.461" in sql
     assert "0.810" in sql
+    assert 'ON CONFLICT ("nmi", "timestamp") DO NOTHING' in sql
     assert sql.strip().endswith(";")

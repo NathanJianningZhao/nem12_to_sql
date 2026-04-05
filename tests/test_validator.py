@@ -38,6 +38,31 @@ def test_validate_200_record_raises_for_invalid_interval() -> None:
         validate_200_record(record)
 
 
+def test_validate_200_record_raises_for_invalid_nmi_length() -> None:
+    record = {
+        "type": "200",
+        "line_number": 1,
+        "nmi": "NEM120100",
+        "interval": "30",
+    }
+
+    with pytest.raises(FatalFileError):
+        validate_200_record(record)
+
+
+def test_validate_200_record_strips_whitespace_from_nmi() -> None:
+    record = {
+        "type": "200",
+        "line_number": 1,
+        "nmi": " NEM1201009 ",
+        "interval": "30",
+    }
+
+    validated = validate_200_record(record)
+
+    assert validated["nmi"] == "NEM1201009"
+
+
 def test_validate_200_record_raises_for_missing_interval() -> None:
     record = {
         "type": "200",

@@ -7,6 +7,7 @@ from exceptions import FatalFileError, RecoverableRecordError
 
 
 VALID_INTERVALS = {5, 15, 30}
+NMI_LENGTH = 10
 
 
 # NEM12 interval payloads are daily, so the valid count is derived from
@@ -22,12 +23,19 @@ def expected_interval_count(interval_minutes: int) -> int:
 # Validate the active 200 record context and normalize interval length to int
 # so later stages can treat it as trusted state.
 def validate_200_record(record: dict) -> dict:
-    nmi = record.get("nmi")
+    raw_nmi = record.get("nmi")
     raw_interval = record.get("interval")
     line_number = record.get("line_number")
 
-    if not nmi:
+    if raw_nmi is None or not str(raw_nmi).strip():
         raise FatalFileError(f"Line {line_number}: 200 record missing NMI")
+
+    nmi = str(raw_nmi).strip()
+
+    if len(nmi) != NMI_LENGTH:
+        raise FatalFileError(
+            f"Line {line_number}: invalid NMI '{nmi}'. Expected {NMI_LENGTH} characters"
+        )
 
     if raw_interval is None:
         raise FatalFileError(f"Line {line_number}: 200 record missing interval length")

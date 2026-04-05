@@ -47,7 +47,9 @@ class SQLBatchWriter:
             )
 
         self.output_file.write(",\n".join(values_sql))
-        self.output_file.write(";\n\n")
+        self.output_file.write(
+            '\nON CONFLICT ("nmi", "timestamp") DO NOTHING;\n\n'
+        )
         self.buffer.clear()
 
     # Flush any remaining buffered rows before the writer goes out of scope.
