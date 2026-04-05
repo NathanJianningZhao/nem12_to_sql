@@ -13,8 +13,7 @@ from validator import validate_200_record, validate_300_record
 logger = logging.getLogger(__name__)
 
 
-# Run the streaming pipeline from input file to batched SQL output.
-# Fatal file issues stop processing; invalid 300 records are skipped.
+# Run the streaming pipeline from input file to batched SQL output. Fatal file issues stop processing; invalid 300 records are skipped.
 def main() -> None:
     configure_logging()
 

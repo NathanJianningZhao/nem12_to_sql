@@ -10,8 +10,7 @@ logger = logging.getLogger(__name__)
 KNOWN_RECORD_TYPES = {"100", "200", "300", "400", "500", "900"}
 
 
-# Treat numeric-looking fragments as interval payload so wrapped 300 records
-# can be reconstructed before validation decides whether the day is complete.
+# Treat numeric-looking fragments as interval payload so wrapped 300 records can be reconstructed before validation decides whether the day is complete.
 def _is_numeric(value: str) -> bool:
     try:
         Decimal(value)
@@ -21,8 +20,7 @@ def _is_numeric(value: str) -> bool:
     return True
 
 
-# Interval extraction stops at the first non-numeric token so trailing
-# metadata fields stay out of the consumption payload.
+# Interval extraction stops at the first non-numeric token so trailing metadata fields stay out of the consumption payload.
 def _extract_interval_values(parts: list[str]) -> list[str]:
     values: list[str] = []
 
@@ -35,8 +33,7 @@ def _extract_interval_values(parts: list[str]) -> list[str]:
     return values
 
 
-# Convert one buffered logical record into the minimal raw structure expected
-# by the validator and pipeline.
+# Convert one buffered logical record into the minimal raw structure expected by the validator and pipeline.
 def _parse_record(record_text: str, line_number: int) -> dict:
     parts = record_text.split(",")
     record_type = parts[0]
@@ -64,8 +61,7 @@ def _parse_record(record_text: str, line_number: int) -> dict:
     }
 
 
-# Read the file as a stream and buffer wrapped 300 records so downstream code
-# never has to reason about physical line breaks.
+# Read the file as a stream and buffer wrapped 300 records so downstream code never has to reason about physical line breaks.
 def parse_file(file_path: str) -> Iterator[dict]:
     logger.info("Opening input file: %s", file_path)
 

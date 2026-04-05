@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 from typing import Iterator
 
 
-# Convert one validated 300 record into row-shaped data for SQL writing.
-# Each interval advances from the base date by the active interval length.
+# Convert one validated 300 record into row-shaped data for SQL writing. Each interval advances from the base date by the active interval length.
 def expand_300_record(nmi: str, interval_minutes: int, record: dict) -> Iterator[dict]:
     base_date = datetime.strptime(record["date"], "%Y%m%d")
 

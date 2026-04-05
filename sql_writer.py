@@ -20,7 +20,7 @@ class SQLBatchWriter:
         if len(self.buffer) >= self.batch_size:
             self.flush()
 
-    # Accept iterables from the transformer without forcing eager materialization.
+    # Consume rows one at a time so callers do not need to build a full list first.
     def add_rows(self, rows) -> None:
         for row in rows:
             self.add_row(row)
