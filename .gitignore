@@ -1,12 +1,16 @@
 # Python cache
 __pycache__/
 *.pyc
-output.sql
+
 # Virtual environments
+.venv/
 venv/
 .env/
 
-# Output files
+# Test and tooling caches
+.pytest_cache/
+
+# Generated output
 output.sql
 
 # OS files
